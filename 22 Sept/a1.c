@@ -93,12 +93,51 @@ void generate_selections(int a[], int n, int k, int b[], void *data, void (*proc
  * The dictionary parameter is an array of words, sorted in dictionary order.
  * nwords is the number of words in this dictionary.
  */
+int binary_search_words(const char *word, const char *dictionary[], int nwords)
+{
+    int i = 0, last = nwords - 1, compare;
+    while (i <= last)
+    {
+        int mid = (i + last) / 2;                // Doing Binary search
+        compare = strcmp(word, dictionary[mid]); // comparearing words
+        if (compare == 0)
+            return 1;
+        if (compare > 0)
+            i = mid + 1;
+        else
+            last = mid - 1;
+    }
+    return 0;
+}
+void recursive_split(const char *source, const char *dictionary[], int nwords, char buf[], void *data, void (*process_split)(char buf[], void *data), int bi)
+{
+    int n = (int)strlen(source);
+    int i = 0;
+    while (i < n)
+    {
+        buf[bi + i] = source[i];
+        buf[bi + i + 1] = '\0';
+
+        if (binary_search_words(&buf[bi], dictionary, nwords)) // Checking if splitted word is in dis=ctionary
+        {
+            if (i == n - 1)
+            {
+                process_split(buf, data);
+            }
+            else
+            {
+                buf[bi + i + 1] = ' ';
+                recursive_split(&source[i + 1], dictionary, nwords, buf, data, process_split, bi + i + 2);
+            }
+        }
+
+        i++;
+    }
+}
+
 void generate_splits(const char *source, const char *dictionary[], int nwords, char buf[], void *data, void (*process_split)(char buf[], void *data))
 {
-    strcpy(buf, "art is toil");
-    process_split(buf, data);
-    strcpy(buf, "artist oil");
-    process_split(buf, data);
+    recursive_split(source, dictionary, nwords, buf, data, process_split, 0);
 }
 
 /*
@@ -253,8 +292,8 @@ BEGIN_TEST(previous_permutation) {
 int main()
 {
     run_tests((test_t[]) {
-            TEST(generate_selections),
-            // TEST(generate_splits),
+            // TEST(generate_selections),
+            TEST(generate_splits),
             // TEST(previous_permutation),
             0
         });
