@@ -144,15 +144,58 @@ void generate_splits(const char *source, const char *dictionary[], int nwords, c
  * Transform a[] so that it becomes the previous permutation of the elements in it.
  * If a[] is the first permutation, leave it unchanged.
  */
-void previous_permutation(int a[], int n)
+
+int findClosestSmaller(int target, int *numbers, int count)
 {
-    a[0] = 1;
-    a[1] = 5;
-    a[2] = 4;
-    a[3] = 6;
-    a[4] = 3;
-    a[5] = 2;
+    int min_diff = INT_MAX;
+    int closest_index = -1;
+
+    for (int i = 0; i < count; i++)
+    {
+        if (numbers[i] < target)
+        {
+            int currentDifference = target - numbers[i];
+            if (currentDifference < min_diff)
+            {
+                min_diff = currentDifference;
+                closest_index = i;
+            }
+        }
+    }
+
+    return closest_index;
 }
+
+int *previous_permutation(int a[], int n)
+{
+    for (int i = n - 1; i > 0; i--)
+    {
+        if (a[i] < a[i - 1])
+        {
+            int ind = findClosestSmaller(a[i - 1], a + i, n - i);
+            int temp = a[ind + i];
+            a[ind + i] = a[i - 1];
+            a[i - 1] = temp;
+
+            // Sort the remaining elements in descending order
+            for (int j = i; j < n - 1; j++)
+            {
+                for (int k = j + 1; k < n; k++)
+                {
+                    if (a[j] < a[k])
+                    {
+                        int temp = a[j];
+                        a[j] = a[k];
+                        a[k] = temp;
+                    }
+                }
+            }
+            break;
+        }
+    }
+    return a;
+}
+
 
 /* Write your tests here. Use the previous assignment for reference. */
 
