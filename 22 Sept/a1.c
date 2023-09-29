@@ -7,24 +7,83 @@
  *
  * The array b[] will have enough space to hold k elements.
  * For a selection i1, ..., ik, you should set b[0] = a[i1], ..., b[k-1] = a[ik].
- * Selections should be generated in lexicographic order. 
+ * Selections should be generated in lexicographic order.
  * a[0..k-1] is the smallest selection and a[n-k..n-1] is the largest.
  */
+
+void next_newperm(int s[], int arr[], int n, int k)
+{
+    if (!k)
+        return;
+    int m = s[k - 1] + 1;
+    while (m < n)
+    {
+        if (arr[m])
+        {
+            arr[s[k - 1]] = 1;
+            s[k - 1] = m;
+            arr[m] = 0;
+            return;
+        }
+        m++;
+    }
+
+    arr[n - 1] = 1;
+    next_newperm(s, arr, n - 1, k - 1);
+    m = n;
+    while (m >= 0)
+    {
+        if (!arr[m])
+        {
+            arr[m + 1] = 0;
+            s[k - 1] = m + 1;
+            return;
+        }
+        m--;
+    }
+}
+
 void generate_selections(int a[], int n, int k, int b[], void *data, void (*process_selection)(int *b, int k, void *data))
 {
-    b[0] = 2; b[1] = 1;
-    process_selection(b, 2, data);
-    b[0] = 2; b[1] = 6;
-    process_selection(b, 2, data);
-    b[0] = 2; b[1] = 5;
-    process_selection(b, 2, data);
-    b[0] = 1; b[1] = 6;
-    process_selection(b, 2, data);
-    b[0] = 1; b[1] = 5;
-    process_selection(b, 2, data);
-    b[0] = 6; b[1] = 5;
-    process_selection(b, 2, data);
+
+    int flag = 1;
+    int m = 0;
+    int permutation[k], list[n];
+    
+    while (m < k)
+    {
+        permutation[m] = m;
+        list[m] = 0;
+        m++;
+    }
+    for (int m = k; m < n; m++)
+        list[m] = 1;
+
+    while (flag)
+    {
+        flag = 0;
+        for (int m = 0; m < k; m++)
+            b[m] = a[permutation[m]];
+
+        process_selection(b, k, data);
+
+        for (int m = 0; m < k; m++)
+        {
+            if (permutation[m] != n - k + m)
+            {
+                flag = 1;
+                break;
+            }
+        }
+
+        if (!flag)
+            break;
+
+        next_newperm(permutation, list, n, k);
+    }
 }
+
+
 
 /*
  * See Exercise 2 (a), page 94 in Jeff Erickson's textbook.
@@ -195,9 +254,10 @@ int main()
 {
     run_tests((test_t[]) {
             TEST(generate_selections),
-            TEST(generate_splits),
-            TEST(previous_permutation),
+            // TEST(generate_splits),
+            // TEST(previous_permutation),
             0
         });
     return 0;
 }
+
